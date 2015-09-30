@@ -1,4 +1,9 @@
 
+# char/word-rnn
+This was originally from the char-rnn project.  It was such a nice implementation of LSTM that I forked it so that you could toggle between words or characters.  (I am agnostic as to which is preferable, so I would like to be able to test both)
+
+
+
 # char-rnn
 
 This code implements **multi-layer Recurrent Neural Network** (RNN, LSTM, and GRU) for training/sampling from character-level language models. The model learns to predict the probability of the next character in a sequence. In other words, the input is a single text file and the model learns to generate text like it.
