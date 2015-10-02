@@ -2,6 +2,12 @@
 # char/word-rnn
 This was originally from the char-rnn project.  It was such a nice implementation of LSTM that I forked it so that you could toggle between words or characters.  (I am agnostic as to which is preferable, so I would like to be able to test both)
 
+Use the -usewords 1 option to train on a word model instead of a char model
+
+
+#Original Documentation from Karpathy
+
+
 
 
 # char-rnn
