@@ -22,6 +22,7 @@ require 'lfs'
 require 'util.OneHot'
 require 'util.misc'
 local CharSplitLMMinibatchLoader = require 'util.CharSplitLMMinibatchLoader'
+local WordSplitLMMinibatchLoader = require 'util.WordSplitLMMinibatchLoader'
 local model_utils = require 'util.model_utils'
 local LSTM = require 'model.LSTM'
 local GRU = require 'model.GRU'
@@ -34,10 +35,12 @@ cmd:text()
 cmd:text('Options')
 -- data
 cmd:option('-data_dir','data/tinyshakespeare','data directory. Should contain the file input.txt with input data')
+
 -- model params
 cmd:option('-rnn_size', 128, 'size of LSTM internal state')
 cmd:option('-num_layers', 2, 'number of layers in the LSTM')
 cmd:option('-model', 'lstm', 'lstm,gru or rnn')
+cmd:option('-wordlevel', 0, '1 for word level 0 for char')
 -- optimization
 cmd:option('-learning_rate',2e-3,'learning rate')
 cmd:option('-learning_rate_decay',0.97,'learning rate decay')
@@ -107,7 +110,13 @@ if opt.gpuid >= 0 and opt.opencl == 1 then
 end
 
 -- create the data loader class
-local loader = CharSplitLMMinibatchLoader.create(opt.data_dir, opt.batch_size, opt.seq_length, split_sizes)
+local loader
+if opt.wordlevel==1 then 
+  loader = WordSplitLMMinibatchLoader.create(opt.data_dir, opt.batch_size, opt.seq_length, split_sizes)
+else 
+  loader = CharSplitLMMinibatchLoader.create(opt.data_dir, opt.batch_size, opt.seq_length, split_sizes)
+end 
+
 local vocab_size = loader.vocab_size  -- the number of distinct characters
 local vocab = loader.vocab_mapping
 print('vocab size: ' .. vocab_size)
@@ -256,6 +265,7 @@ function feval(x)
     ------------------- forward pass -------------------
     local rnn_state = {[0] = init_state_global}
     local predictions = {}           -- softmax outputs
+    
     local loss = 0
     for t=1,opt.seq_length do
         clones.rnn[t]:training() -- make sure we are in correct mode (this is cheap, sets flag)
@@ -301,7 +311,7 @@ local iterations_per_epoch = loader.ntrain
 local loss0 = nil
 for i = 1, iterations do
     local epoch = i / loader.ntrain
-
+    print(i)
     local timer = torch.Timer()
     local _, loss = optim.rmsprop(feval, params, optim_state)
     local time = timer:time().real
